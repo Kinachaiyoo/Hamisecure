@@ -1,0 +1,8 @@
+# trusted domains (one per line)
+esewa.com.np
+khalti.com
+google.com
+microsoft.com
+github.com
+tryhackme.com
+

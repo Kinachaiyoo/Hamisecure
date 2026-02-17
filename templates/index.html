@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Hamisecure</title>
+  <link rel="stylesheet" href="/static/app.css?v=7"/>
+</head>
+<body>
+  <div class="bg-orbs"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">H</div>
+      <div>
+        <div class="brand-name">Hamisecure</div>
+        <div class="brand-sub">Explainable Email Fraud Detection</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="pill" id="thresholdPill">Threshold: —</span>
+      <button class="btn ghost" id="clearHistoryBtn" type="button">Clear history</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-left glass card3d">
+        <h1>Scan emails. Understand why.</h1>
+        <p class="muted">
+          Hamisecure prioritizes reducing false positives and shows a readable analysis report.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat card3d">
+            <div class="stat-num" id="statScans">0</div>
+            <div class="stat-label">Scans</div>
+          </div>
+          <div class="stat card3d">
+            <div class="stat-num" id="statFraud">0</div>
+            <div class="stat-label">Fraud</div>
+          </div>
+          <div class="stat card3d">
+            <div class="stat-num" id="statLegit">0</div>
+            <div class="stat-label">Legit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right glass card3d">
+        <div class="meter-header">
+          <div>
+            <div class="kicker">Risk meter</div>
+            <div class="big" id="riskLabel">—</div>
+          </div>
+          <span class="badge" id="riskBadge">—</span>
+        </div>
+        <div class="meter">
+          <div class="meter-bar" id="meterBar" style="width:0%"></div>
+        </div>
+        <div class="meter-foot">
+          <span class="muted">Probability</span>
+          <span class="mono" id="probText">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass card3d">
+      <div class="tabs">
+        <button class="tab active" data-tab="manual" type="button">Manual</button>
+        <button class="tab" data-tab="imap" type="button">IMAP</button>
+        <button class="tab" data-tab="file" type="button">File Upload</button>
+        <button class="tab" data-tab="history" type="button">History</button>
+      </div>
+
+      <!-- Manual -->
+      <div class="tabpane active" id="tab-manual">
+        <div class="grid2">
+          <div>
+            <label>Subject</label>
+            <input id="subject" type="text" placeholder="e.g., Verify your account immediately"/>
+
+            <label>Sender email (optional)</label>
+            <input id="sender_email" type="text" placeholder="name@domain.com"/>
+
+            <label>Body</label>
+            <textarea id="body" placeholder="Paste the email content here..."></textarea>
+
+            <div class="row">
+              <button class="btn" id="analyzeBtn" type="button">Analyze</button>
+              <button class="btn ghost" id="fillDemoBtn" type="button">Fill demo</button>
+              <button class="btn ghost" id="exportJsonBtn" type="button">Export JSON</button>
+            </div>
+          </div>
+
+          <div class="side">
+            <div class="panel">
+              <div class="panel-title">Readable analysis</div>
+              <div id="reportBox" class="report muted">Run a scan to view report.</div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Feature signals</div>
+              <div id="signalsBox" class="chips muted">Run a scan to view signals.</div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Raw response</div>
+              <pre class="out" id="manualOut">—</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMAP -->
+      <div class="tabpane" id="tab-imap">
+        <div class="grid2">
+          <div>
+            <div class="grid3">
+              <div>
+                <label>IMAP host</label>
+                <input id="imap_host" type="text" placeholder="imap.gmail.com"/>
+              </div>
+              <div>
+                <label>Port</label>
+                <input id="imap_port" type="text" value="993"/>
+              </div>
+              <div class="checkrow">
+                <label>SSL</label>
+                <label class="switch">
+                  <input id="imap_ssl" type="checkbox" checked/>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <label>Username</label>
+            <input id="imap_user" type="text" placeholder="you@example.com"/>
+
+            <label>Password (App Password recommended)</label>
+            <input id="imap_password" type="password"/>
+
+            <div class="grid3">
+              <div>
+                <label>Folder</label>
+                <input id="imap_folder" type="text" value="INBOX"/>
+              </div>
+              <div>
+                <label>Limit</label>
+                <input id="imap_limit" type="text" value="10"/>
+              </div>
+              <div class="checkrow">
+                <label>&nbsp;</label>
+                <button class="btn" id="imapScanBtn" type="button">Scan Inbox</button>
+              </div>
+            </div>
+
+            <div class="hint muted">
+              Gmail/Outlook MFA → use App Password.
+            </div>
+          </div>
+
+          <div class="side">
+            <div class="panel">
+              <div class="panel-title">Results</div>
+              <div class="tablewrap">
+                <table class="table" id="imapTable">
+                  <thead>
+                    <tr>
+                      <th>Prediction</th>
+                      <th>Prob</th>
+                      <th>From</th>
+                      <th>Subject</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td colspan="4" class="muted">No scans yet.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Selected email report</div>
+              <div id="imapDetail" class="report muted">Select an email.</div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Raw</div>
+              <pre class="out" id="imapOut">—</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- File Upload -->
+      <div class="tabpane" id="tab-file">
+        <div class="grid2">
+          <div>
+            <label>Upload an email file</label>
+            <input id="uploadFile" type="file" accept=".eml,.txt,.html,.htm"/>
+
+            <div class="row">
+              <button class="btn" id="uploadAnalyzeBtn" type="button">Analyze File</button>
+              <button class="btn ghost" id="clearFileBtn" type="button">Clear</button>
+            </div>
+
+            <div class="hint muted">
+              Best format: <b>.eml</b> (includes headers + From/Subject).
+            </div>
+          </div>
+
+          <div class="side">
+            <div class="panel">
+              <div class="panel-title">File analysis report</div>
+              <div id="fileReport" class="report muted">Upload a file to view report.</div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Raw</div>
+              <pre class="out" id="fileOut">—</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="tabpane" id="tab-history">
+        <div class="history" id="history"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js?v=7"></script>
+</body>
+</html>
+
